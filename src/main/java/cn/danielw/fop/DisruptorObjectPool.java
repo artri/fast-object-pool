@@ -4,6 +4,7 @@ import com.conversantmedia.util.concurrent.DisruptorBlockingQueue;
 
 import java.util.concurrent.BlockingQueue;
 
+@Deprecated
 public class DisruptorObjectPool<T> extends ObjectPool<T> {
 
     public DisruptorObjectPool(PoolConfig poolConfig, ObjectFactory<T> objectFactory) {

@@ -2,7 +2,6 @@ package cn.danielw.fop;
 
 import org.junit.Test;
 
-import static java.lang.Math.abs;
 import static org.junit.Assert.*;
 
 public class PoolConfigTest {

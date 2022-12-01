@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %5p | %t | %-5level %logger{32} - [%file:%line] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="console" />
+    </root>
+
+    <logger name="ch.qos.logback">
+        <level value="ERROR"/>
+    </logger>
+
+    <logger name="cn.danielw.fop" level="warn" additivity="false">
+        <appender-ref ref="console" />
+    </logger>
+    <logger name="cn.danielw.fop.benchmark" level="warn" additivity="false">
+        <appender-ref ref="console" />
+    </logger>
+
+</configuration>

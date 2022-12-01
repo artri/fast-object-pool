@@ -9,12 +9,6 @@
     <packaging>jar</packaging>
     <version>2.2.1</version>
     <description>An extremely fast object pool with zero dependencies</description>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.projectKey>DanielYWoo_fast-object-pool</sonar.projectKey>
-        <sonar.organization>danielywoo1</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    </properties>
 
     <developers>
         <developer>
@@ -52,6 +46,20 @@
         </repository>
     </distributionManagement>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <sonar.projectKey>DanielYWoo_fast-object-pool</sonar.projectKey>
+        <sonar.organization>danielywoo1</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
+        <org.slf4j.version>2.0.5</org.slf4j.version>
+        <logback.version>1.4.5</logback.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.conversantmedia</groupId>
@@ -59,6 +67,29 @@
             <version>1.2.15</version>
             <!-- This is optional, if you want the best performance you need to manually add disruptor into your dependency -->
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk-platform-logging</artifactId> 
+            <version>${org.slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

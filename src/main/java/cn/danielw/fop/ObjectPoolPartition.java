@@ -1,16 +1,16 @@
 package cn.danielw.fop;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Daniel
  */
 public class ObjectPoolPartition<T> {
 
-    private static final Logger logger = Logger.getLogger(ObjectPoolPartition.class.getName());
+    private static final Logger logger = System.getLogger(ObjectPoolPartition.class.getCanonicalName());
 
     private final ObjectPool<T> pool;
     private final PoolConfig config;
@@ -26,6 +26,7 @@ public class ObjectPoolPartition<T> {
         this.objectFactory = objectFactory;
         this.partition = partition;
         this.objectQueue = queue;
+        logger.log(Level.TRACE, "Object queue initialized to: {}", objectQueue.getClass().getCanonicalName());
         for (int i = 0; i < config.getMinSize(); i++) {
             objectQueue.add(new Poolable<>(objectFactory.create(), pool, partition));
         }
@@ -50,8 +51,9 @@ public class ObjectPoolPartition<T> {
                 objectQueue.put(new Poolable<>(objectFactory.create(), pool, partition));
             }
             totalCount += delta;
-            if (logger.isLoggable(Level.FINE))
-                logger.fine("increase objects: count=" + totalCount + ", queue size=" + objectQueue.size());
+            if (logger.isLoggable(Level.DEBUG)) {
+                logger.log(Level.DEBUG, "increase objects: count={}, queue size={}", totalCount, objectQueue.size());
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -78,9 +80,9 @@ public class ObjectPoolPartition<T> {
         while (delta-- > 0 && (obj = objectQueue.poll()) != null) {
             // performance trade off: delta always decrease even if the queue is empty,
             // so it could take several intervals to shrink the pool to the configured min value.
-            if (logger.isLoggable(Level.FINE))
-                logger.fine("obj=" + obj + ", now-last=" + (now - obj.getLastAccessTs()) + ", max idle=" +
-                    config.getMaxIdleMilliseconds());
+            if (logger.isLoggable(Level.DEBUG)) {
+                logger.log(Level.DEBUG, "obj={}, now-last={}, max idle={}", obj, (now - obj.getLastAccessTs()), config.getMaxIdleMilliseconds());
+            }
             if (now - obj.getLastAccessTs() > config.getMaxIdleMilliseconds() &&
                     ThreadLocalRandom.current().nextDouble(1) < config.getScavengeRatio()) {
                 decreaseObject(obj); // shrink the pool size if the object reaches max idle time
@@ -89,7 +91,9 @@ public class ObjectPoolPartition<T> {
                 objectQueue.put(obj); //put it back
             }
         }
-        if (removed > 0 && logger.isLoggable(Level.FINE)) logger.fine(removed + " objects were scavenged.");
+        if (removed > 0 && logger.isLoggable(Level.DEBUG)) {
+            logger.log(Level.DEBUG, "{} objects were scavenged.", removed);
+        }
     }
 
     public synchronized int shutdown() {

@@ -1,22 +1,17 @@
-import cn.danielw.fop.ObjectFactory;
-import cn.danielw.fop.ObjectPool;
-import cn.danielw.fop.PoolConfig;
-import cn.danielw.fop.Poolable;
+package cn.danielw.fop;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestObjectPool {
+public class ObjectPoolTest {
 
 
     public ObjectPool<StringBuilder> init(double scavengeRatio) {
-        Logger.getLogger("").getHandlers()[0].setLevel(Level.ALL);
-        Logger.getLogger("").setLevel(Level.ALL);
+
         PoolConfig config = new PoolConfig();
         config.setPartitionSize(2).setMinSize(2).setMaxSize(20).setMaxIdleMilliseconds(5000).
                 setMaxWaitMilliseconds(100).setScavengeIntervalMilliseconds(5000).setScavengeRatio(scavengeRatio);

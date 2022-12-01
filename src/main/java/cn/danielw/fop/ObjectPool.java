@@ -1,17 +1,18 @@
 package cn.danielw.fop;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.lang.reflect.Constructor;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Daniel
  */
 public class ObjectPool<T> {
 
-    private static final Logger logger = Logger.getLogger(ObjectPool.class.getCanonicalName());
+    private static final Logger logger = System.getLogger(ObjectPool.class.getCanonicalName());
 
     private final PoolConfig config;
     private final ObjectFactory<T> factory;
@@ -19,6 +20,7 @@ public class ObjectPool<T> {
     private Scavenger scavenger;
     private volatile boolean shuttingDown;
 
+    @SuppressWarnings("unchecked")
     public ObjectPool(PoolConfig poolConfig, ObjectFactory<T> objectFactory) {
         this.config = poolConfig;
         this.factory = objectFactory;
@@ -32,8 +34,15 @@ public class ObjectPool<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected BlockingQueue<Poolable<T>> createBlockingQueue(PoolConfig poolConfig) {
-        return new ArrayBlockingQueue<>(poolConfig.getMaxSize());
+        try {
+            Class<?> clazz = Class.forName("com.conversantmedia.util.concurrent.DisruptorBlockingQueue");
+            Constructor<?> contructor = clazz.getConstructor(int.class);
+            return (BlockingQueue<Poolable<T>>) contructor.newInstance(poolConfig.getMaxSize());
+        } catch (Throwable e) {
+            return new ArrayBlockingQueue<>(poolConfig.getMaxSize());
+        }
     }
 
     /**
@@ -58,7 +67,7 @@ public class ObjectPool<T> {
             if (factory.validate(result.getObject())) {
                 return result;
             } else {
-                logger.warning("Invalid object found in the pool, destroy it: " + result.getObject());
+                logger.log(Level.WARNING, "Invalid object found in the pool, destroy it: {}", result.getObject());
                 this.partitions[result.getPartition()].decreaseObject(result);
             }
         }
@@ -105,9 +114,9 @@ public class ObjectPool<T> {
         ObjectPoolPartition<T> subPool = this.partitions[obj.getPartition()];
         try {
             subPool.getObjectQueue().put(obj);
-            if (logger.isLoggable(Level.FINE))
-                logger.fine("return object: queue size:" + subPool.getObjectQueue().size() +
-                    ", partition id:" + obj.getPartition());
+            if (logger.isLoggable(Level.DEBUG)) {
+                logger.log(Level.DEBUG, "return object: queue size:{}, partition id:{}", subPool.getObjectQueue().size(), obj.getPartition());
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e); // impossible for now, unless there is a bug, e,g. borrow once but return twice.
         }
@@ -144,14 +153,13 @@ public class ObjectPool<T> {
                     //noinspection BusyWait
                     Thread.sleep(config.getScavengeIntervalMilliseconds());
                     partition = ++partition % config.getPartitionSize();
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("scavenge sub pool " + partition);
+                    if (logger.isLoggable(Level.DEBUG)) {
+                        logger.log(Level.DEBUG, "scavenge sub pool {}", partition);
                     }
                     partitions[partition].scavenge();
                 } catch (InterruptedException ignored) {
                 }
             }
         }
-
     }
 }
